@@ -3,6 +3,11 @@
 # 定义 Docker Compose 版本
 DOCKER_COMPOSE_VERSION="2.29.7"
 
+# 定义颜色
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # 无颜色
+
 # 检查是否为 root 用户
 if [ "$EUID" -ne 0 ]; then
   echo "请使用 root 用户权限运行此脚本。"
@@ -25,18 +30,18 @@ else
     exit 1
 fi
 
-echo "检测到的操作系统类型: $OS_TYPE"
-echo "开始安装 Docker 和 Docker Compose..."
+echo -e "检测到的操作系统类型: ${RED}$OS_TYPE${NC}"
+echo -e "开始安装 ${GREEN}Docker 和 Docker Compose...${NC}"
 
 # 更新系统包
-echo "更新系统包..."
+echo -e "${GREEN}更新系统包...${NC}"
 apt-get update -y
 apt-get install -y ca-certificates curl gnupg lsb-release
 
 # 安装 Docker
-echo "安装 Docker..."
+echo -e "${GREEN}安装 Docker...${NC}"
 mkdir -p /etc/apt/keyrings
-echo "添加阿里云 Docker GPG 公钥..."
+echo -e "${GREEN}添加阿里云 Docker GPG 公钥...${NC}"
 curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/$OS_TYPE/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
 
 echo \
@@ -47,20 +52,20 @@ apt-get update -y
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # 启动并配置 Docker 自启动
-echo "启动并配置 Docker 自启动..."
+echo -e "${GREEN}启动并配置 Docker 自启动...${NC}"
 systemctl enable docker
 systemctl start docker
 
 # 安装 Docker Compose
-echo "安装 Docker Compose..."
+echo -e "${GREEN}安装 Docker Compose...${NC}"
 curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
 # 赋予 Docker Compose 可执行权限
 chmod +x /usr/local/bin/docker-compose
 
 # 验证 Docker 和 Docker Compose 是否安装成功
-echo "验证 Docker 和 Docker Compose 版本..."
-docker --version
-docker-compose --version
+echo -e "${GREEN}验证 Docker 和 Docker Compose 版本...${NC}"
+docker --version || { echo -e "${RED}Docker 未安装成功${NC}"; exit 1; }
+docker-compose --version || { echo -e "${RED}Docker Compose 未安装成功${NC}"; exit 1; }
 
-echo "Docker 和 Docker Compose 安装完成！"
+echo -e "${GREEN}Docker 和 Docker Compose 安装完成！${NC}"
