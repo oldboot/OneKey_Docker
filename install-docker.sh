@@ -34,12 +34,12 @@ echo -e "检测到的操作系统类型: ${RED}$OS_TYPE${NC}"
 echo -e "开始安装 ${GREEN}Docker 和 Docker Compose...${NC}"
 
 # 更新系统包
-echo "更新系统包..."
+echo -e "${GREEN}更新系统包...${NC}"
 apt-get update -y
 apt-get install -y ca-certificates curl gnupg lsb-release
 
 # 安装 Docker
-echo "安装 Docker..."
+echo -e "${GREEN}安装 Docker...${NC}"
 mkdir -p /etc/apt/keyrings
 
 # 始终覆盖 GPG 密钥
@@ -67,7 +67,7 @@ chmod +x /usr/local/bin/docker-compose
 
 # 验证 Docker 和 Docker Compose 是否安装成功
 echo -e "${GREEN}验证 Docker 和 Docker Compose 版本...${NC}"
-docker --version
-docker-compose --version
+docker --version || { echo -e "${RED}Docker 未安装成功${NC}"; exit 1; }
+docker-compose --version || { echo -e "${RED}Docker Compose 未安装成功${NC}"; exit 1; }
 
 echo -e "${GREEN}Docker 和 Docker Compose 安装完成！${NC}"
