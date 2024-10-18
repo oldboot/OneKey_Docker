@@ -6,7 +6,7 @@ DOCKER_COMPOSE_VERSION="2.29.7"
 # 检查是否为 root 用户
 if [ "$EUID" -ne 0 ]; then
   echo "请使用 root 用户权限运行此脚本。"
-  exit
+  exit 1
 fi
 
 echo "开始安装 Docker 和 Docker Compose..."
@@ -31,12 +31,10 @@ if [ -x "$(command -v apt-get)" ]; then
     # 安装 Docker
     echo "安装 Docker..."
     mkdir -p /etc/apt/keyrings
-    # 检查 GPG 密钥是否已存在
-    if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
-        curl -fsSL https://download.docker.com/linux/$OS_TYPE/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    else
-        echo "GPG 密钥文件已存在，跳过更新。"
-    fi
+
+    # 始终覆盖 GPG 密钥
+    echo "添加 Docker GPG 公钥..."
+    curl -fsSL https://download.docker.com/linux/$OS_TYPE/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
 
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_TYPE \
