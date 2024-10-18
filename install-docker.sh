@@ -9,8 +9,6 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-echo "开始安装 Docker 和 Docker Compose..."
-
 # 检查系统类型
 if [ -x "$(command -v apt-get)" ]; then
     # 判断是 Debian 还是 Ubuntu
@@ -22,47 +20,33 @@ if [ -x "$(command -v apt-get)" ]; then
         echo "不支持的系统。请使用基于 Ubuntu 或 Debian 的系统。"
         exit 1
     fi
-
-    # 更新系统包
-    echo "更新系统包..."
-    apt-get update -y
-    apt-get install -y ca-certificates curl gnupg lsb-release
-
-    # 安装 Docker
-    echo "安装 Docker..."
-    mkdir -p /etc/apt/keyrings
-
-    # 始终覆盖 GPG 密钥
-    echo "添加 Docker GPG 公钥..."
-    curl -fsSL https://download.docker.com/linux/$OS_TYPE/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
-
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_TYPE \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-    apt-get update -y
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-elif [ -x "$(command -v yum)" ]; then
-    # CentOS/RHEL 系列
-    echo "更新系统包..."
-    yum update -y
-
-    # 安装依赖
-    echo "安装依赖..."
-    yum install -y yum-utils
-
-    # 添加 Docker 源
-    echo "添加 Docker 源..."
-    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
-    # 安装 Docker
-    echo "安装 Docker..."
-    yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 else
-    echo "不支持的系统。请使用基于 Ubuntu/Debian 或 CentOS/RHEL 的系统。"
+    echo "不支持的包管理器。"
     exit 1
 fi
+
+echo "检测到的操作系统类型: $OS_TYPE"
+echo "开始安装 Docker 和 Docker Compose..."
+
+# 更新系统包
+echo "更新系统包..."
+apt-get update -y
+apt-get install -y ca-certificates curl gnupg lsb-release
+
+# 安装 Docker
+echo "安装 Docker..."
+mkdir -p /etc/apt/keyrings
+
+# 始终覆盖 GPG 密钥
+echo "添加 Docker GPG 公钥..."
+curl -fsSL https://download.docker.com/linux/$OS_TYPE/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$OS_TYPE \
+  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # 启动并配置 Docker 自启动
 echo "启动并配置 Docker 自启动..."
