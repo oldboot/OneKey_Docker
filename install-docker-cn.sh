@@ -8,34 +8,49 @@ fi
 
 echo "开始安装 Docker 和 Docker Compose..."
 
+# 获取系统信息
+if [ -x "$(command -v lsb_release)" ]; then
+    # 使用 lsb_release 获取信息
+    DISTRO=$(lsb_release -si)
+    CODENAME=$(lsb_release -cs)
+else
+    # 读取 /etc/os-release 文件获取信息
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        DISTRO=$ID
+        CODENAME=$VERSION_ID
+    else
+        echo "不支持的系统。"
+        exit 1
+    fi
+fi
+
+echo "检测到的发行版: $DISTRO, 版本: $CODENAME"
+
 # 更新系统包
-if [ -x "$(command -v apt-get)" ]; then
+if [[ "$DISTRO" == "Ubuntu" || "$DISTRO" == "Debian" ]]; then
     # Debian/Ubuntu 系列
     echo "更新系统包..."
     apt-get update -y
     apt-get install -y ca-certificates curl gnupg lsb-release
 
-    # 获取发行版信息
-    DISTRO=$(lsb_release -is)
-    CODENAME=$(lsb_release -cs)
-
     # 添加阿里云 Docker 源
     echo "添加阿里云 Docker 源..."
     if [ ! -f /usr/share/keyrings/docker-archive-keyring.gpg ]; then
-        curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/$DISTRO/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     else
         echo "GPG 密钥文件已存在，跳过更新。"
     fi
 
     echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://mirrors.aliyun.com/docker-ce/linux/$DISTRO \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
       $CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     # 更新并安装 Docker
     apt-get update -y
     apt-get install -y docker-ce docker-ce-cli containerd.io
 
-elif [ -x "$(command -v yum)" ]; then
+elif [[ "$DISTRO" == "CentOS" || "$DISTRO" == "RHEL" ]]; then
     # CentOS/RHEL 系列
     echo "更新系统包..."
     yum update -y
