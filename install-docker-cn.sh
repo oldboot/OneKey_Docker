@@ -15,17 +15,21 @@ if [ -x "$(command -v apt-get)" ]; then
     apt-get update -y
     apt-get install -y ca-certificates curl gnupg lsb-release
 
+    # 获取发行版信息
+    DISTRO=$(lsb_release -is)
+    CODENAME=$(lsb_release -cs)
+
     # 添加阿里云 Docker 源
     echo "添加阿里云 Docker 源..."
     if [ ! -f /usr/share/keyrings/docker-archive-keyring.gpg ]; then
-        curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+        curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/$DISTRO/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     else
         echo "GPG 密钥文件已存在，跳过更新。"
     fi
 
     echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://mirrors.aliyun.com/docker-ce/linux/$DISTRO \
+      $CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
     # 更新并安装 Docker
     apt-get update -y
