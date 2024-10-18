@@ -21,10 +21,16 @@ if [ -x "$(command -v apt-get)" ]; then
     # 安装 Docker
     echo "安装 Docker..."
     mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    # 检查 GPG 密钥是否已存在
+    if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    else
+        echo "GPG 密钥文件已存在，跳过更新。"
+    fi
+
     echo \
       "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     apt-get update -y
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
@@ -56,14 +62,4 @@ systemctl start docker
 
 # 安装 Docker Compose
 echo "安装 Docker Compose..."
-curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-
-# 赋予 Docker Compose 可执行权限
-chmod +x /usr/local/bin/docker-compose
-
-# 验证 Docker 和 Docker Compose 是否安装成功
-echo "验证 Docker 和 Docker Compose 版本..."
-docker --version
-docker-compose --version
-
-echo "Docker 和 Docker Compose 安装完成！"
+curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-comp
